@@ -10,26 +10,26 @@
 #include <stdio.h>
 
 static SDL_Window *window = NULL;
+static SDL_Renderer *renderer = NULL;
 
 void runGame(void)
 {
   if (SDL_Init(SDL_INIT_VIDEO) == 0)
   {
     printf("SDL initialized succesfully\n");
-    // Remove the return here - let it continue
   }
   else
   {
     printf("SDL Initialization Error: %s\n", SDL_GetError());
-    return; // Keep this return - initialization failed
+    return;
   }
 
   window = SDL_CreateWindow(
       "Zombie Survival",
       SDL_WINDOWPOS_CENTERED,
       SDL_WINDOWPOS_CENTERED,
-      800,
-      600,
+      1024,
+      768,
       SDL_WINDOW_SHOWN);
 
   if (!window)
@@ -39,7 +39,19 @@ void runGame(void)
     return;
   }
 
-  // You need a game loop here
+  renderer = SDL_CreateRenderer(
+      window,
+      -1,
+      SDL_RENDERER_ACCELERATED);
+
+  if (!renderer)
+  {
+    printf("Renderer creation failed: %s\n", SDL_GetError());
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    return;
+  }
+
   int running = 1;
   SDL_Event event;
 
@@ -50,9 +62,9 @@ void runGame(void)
       if (event.type == SDL_QUIT)
         running = 0;
     }
-    // Render stuff here later
   }
 
+  SDL_DestroyRenderer(renderer); 
   SDL_DestroyWindow(window);
   SDL_Quit();
 }
