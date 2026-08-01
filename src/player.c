@@ -6,7 +6,7 @@ void initPlayer(Player *player)
   player->rect.y = 100;
   player->rect.w = 50;
   player->rect.h = 50;
-  player->speed = 5;
+  player->speed = 4;
   player->movingUp = SDL_FALSE;
   player->movingDown = SDL_FALSE;
   player->movingLeft = SDL_FALSE;
@@ -36,4 +36,6 @@ void updatePlayer(Player *player)
   {
     player->rect.x += player->speed;
   }
+
+  
 }

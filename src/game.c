@@ -86,7 +86,7 @@ void runGame(void)
           break;
         }
       }
-      if (event.type == SDL_KEYUP)
+      else if (event.type == SDL_KEYUP)
       {
         switch (event.key.keysym.sym)
         {
