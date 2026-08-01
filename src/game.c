@@ -56,6 +56,9 @@ void runGame(void)
   SDL_bool running = SDL_TRUE;
   SDL_Event event;
 
+  Player player;
+  initPlayer(&player);
+
   while (running)
   {
     while (SDL_PollEvent(&event))
@@ -65,8 +68,8 @@ void runGame(void)
         running = SDL_FALSE;
       }
     }
-    Player player;
-    initPlayer(&player);
+
+    updatePlayer(&player);
 
     SDL_SetRenderDrawColor(renderer, 100, 190, 130, 255);
     SDL_RenderClear(renderer);
@@ -74,6 +77,7 @@ void runGame(void)
     drawPlayer(&player, renderer);
 
     SDL_RenderPresent(renderer);
+    SDL_Delay(16);
   }
 
   SDL_DestroyRenderer(renderer);
