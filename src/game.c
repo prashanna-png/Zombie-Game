@@ -67,6 +67,43 @@ void runGame(void)
       {
         running = SDL_FALSE;
       }
+
+      if (event.type == SDL_KEYDOWN)
+      {
+        switch (event.key.keysym.sym)
+        {
+        case SDLK_w:
+          player.movingUp = SDL_TRUE;
+          break;
+        case SDLK_s:
+          player.movingDown = SDL_TRUE;
+          break;
+        case SDLK_a:
+          player.movingLeft = SDL_TRUE;
+          break;
+        case SDLK_d:
+          player.movingRight = SDL_TRUE;
+          break;
+        }
+      }
+      if (event.type == SDL_KEYUP)
+      {
+        switch (event.key.keysym.sym)
+        {
+        case SDLK_w:
+          player.movingUp = SDL_FALSE;
+          break;
+        case SDLK_s:
+          player.movingDown = SDL_FALSE;
+          break;
+        case SDLK_a:
+          player.movingLeft = SDL_FALSE;
+          break;
+        case SDLK_d:
+          player.movingRight = SDL_FALSE;
+          break;
+        }
+      }
     }
 
     updatePlayer(&player);

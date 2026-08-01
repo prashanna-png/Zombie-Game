@@ -6,6 +6,14 @@
 typedef struct
 {
   SDL_Rect rect;
+
+  int speed;
+
+  SDL_bool movingUp;
+  SDL_bool movingDown;
+  SDL_bool movingLeft;
+  SDL_bool movingRight;
+
 } Player;
 
 void initPlayer(Player *player);
