@@ -52,7 +52,7 @@ void runGame(void)
     return;
   }
 
-  int running = 1;
+  SDL_bool running = SDL_TRUE;
   SDL_Event event;
 
   while (running)
@@ -60,11 +60,17 @@ void runGame(void)
     while (SDL_PollEvent(&event))
     {
       if (event.type == SDL_QUIT)
-        running = 0;
+      {
+        running = SDL_FALSE;
+      }
     }
+
+    SDL_SetRenderDrawColor(renderer, 100, 190, 130, 255);
+    SDL_RenderClear(renderer);
+    SDL_RenderPresent(renderer);
   }
 
-  SDL_DestroyRenderer(renderer); 
+  SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();
 }
