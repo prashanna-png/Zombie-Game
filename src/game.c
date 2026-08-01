@@ -7,6 +7,7 @@
 
 #include <SDL2/SDL.h>
 #include "game.h"
+#include "player.h"
 #include <stdio.h>
 
 static SDL_Window *window = NULL;
@@ -64,9 +65,14 @@ void runGame(void)
         running = SDL_FALSE;
       }
     }
+    Player player;
+    initPlayer(&player);
 
     SDL_SetRenderDrawColor(renderer, 100, 190, 130, 255);
     SDL_RenderClear(renderer);
+
+    drawPlayer(&player, renderer);
+
     SDL_RenderPresent(renderer);
   }
 
