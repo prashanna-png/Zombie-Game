@@ -37,5 +37,20 @@ void updatePlayer(Player *player)
     player->rect.x += player->speed;
   }
 
-  
+  if (player->rect.x < 0)
+  {
+    player->rect.x = 0;
+  }
+  if (player->rect.x > 974)
+  {
+    player->rect.x = 1024 - player->rect.w;
+  }
+  if (player->rect.y < 0)
+  {
+    player->rect.y = 0;
+  }
+  if (player->rect.y > 718)
+  {
+    player->rect.y = 768 - player->rect.h;
+  }
 }
