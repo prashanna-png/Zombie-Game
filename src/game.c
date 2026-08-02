@@ -108,7 +108,7 @@ void runGame(void)
 
     updatePlayer(&player);
 
-    SDL_SetRenderDrawColor(renderer, 100, 190, 130, 255);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
     drawPlayer(&player, renderer);
