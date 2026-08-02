@@ -1,21 +1,29 @@
 #include "player.h"
+#include <SDL2/SDL_image.h>
 
-void initPlayer(Player *player)
+void initPlayer(Player *player, SDL_Renderer *renderer)
 {
+
   player->rect.x = 100;
   player->rect.y = 100;
-  player->rect.w = 50;
-  player->rect.h = 50;
+  player->rect.w = 30;
+  player->rect.h = 30;
   player->speed = 4;
   player->movingUp = SDL_FALSE;
   player->movingDown = SDL_FALSE;
   player->movingLeft = SDL_FALSE;
   player->movingRight = SDL_FALSE;
+
+  player->texture = IMG_LoadTexture(renderer, "assets/player/player-stand.png");
+
+  if (!player->texture)
+  {
+    printf("Failed to load texture: %s\n", IMG_GetError());
+  }
 }
 void drawPlayer(Player *player, SDL_Renderer *renderer)
 {
-  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-  SDL_RenderFillRect(renderer, &player->rect);
+  SDL_RenderCopy(renderer, player->texture, NULL, &player->rect);
 }
 
 void updatePlayer(Player *player)
@@ -41,7 +49,7 @@ void updatePlayer(Player *player)
   {
     player->rect.x = 0;
   }
-  if (player->rect.x > 974)
+  if (player->rect.x > 1024 - player->rect.w)
   {
     player->rect.x = 1024 - player->rect.w;
   }
@@ -49,7 +57,7 @@ void updatePlayer(Player *player)
   {
     player->rect.y = 0;
   }
-  if (player->rect.y > 718)
+  if (player->rect.y > 768 - player->rect.h)
   {
     player->rect.y = 768 - player->rect.h;
   }

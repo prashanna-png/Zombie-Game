@@ -6,6 +6,7 @@
 // Cleanup
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 #include "game.h"
 #include "player.h"
 #include <stdio.h>
@@ -22,6 +23,12 @@ void runGame(void)
   else
   {
     printf("SDL Initialization Error: %s\n", SDL_GetError());
+    return;
+  }
+  if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG))
+  {
+    printf("SDL_image Initialization Error: %s\n", IMG_GetError());
+    SDL_Quit();
     return;
   }
 
@@ -57,7 +64,7 @@ void runGame(void)
   SDL_Event event;
 
   Player player;
-  initPlayer(&player);
+  initPlayer(&player, renderer);
 
   while (running)
   {

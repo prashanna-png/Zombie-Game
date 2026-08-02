@@ -5,6 +5,7 @@
 
 typedef struct
 {
+  SDL_Texture *texture;
   SDL_Rect rect;
 
   int speed;
@@ -16,7 +17,7 @@ typedef struct
 
 } Player;
 
-void initPlayer(Player *player);
+void initPlayer(Player *player, SDL_Renderer *renderer);
 void drawPlayer(Player *player, SDL_Renderer *renderer);
 void updatePlayer(Player *player);
 
