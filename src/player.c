@@ -1,13 +1,18 @@
 #include "player.h"
 #include <SDL2/SDL_image.h>
+#include <math.h>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 void initPlayer(Player *player, SDL_Renderer *renderer)
 {
 
   player->rect.x = 100;
   player->rect.y = 100;
-  player->rect.w = 30;
-  player->rect.h = 30;
+  player->rect.w = 50;
+  player->rect.h = 50;
   player->speed = 4;
   player->movingUp = SDL_FALSE;
   player->movingDown = SDL_FALSE;
@@ -23,7 +28,32 @@ void initPlayer(Player *player, SDL_Renderer *renderer)
 }
 void drawPlayer(Player *player, SDL_Renderer *renderer)
 {
-  SDL_RenderCopy(renderer, player->texture, NULL, &player->rect);
+
+  int mouseX;
+  int mouseY;
+
+  SDL_GetMouseState(&mouseX, &mouseY);
+
+  float centerX = player->rect.x + player->rect.w / 2.0f;
+  float centerY = player->rect.y + player->rect.h / 2.0f;
+
+  float dy = mouseY - centerY;
+  float dx = mouseX - centerX;
+
+  float angleRadians = atan2(dy, dx);
+  float angleDegrees = angleRadians * (180.0f / M_PI);
+
+  SDL_Point center = {
+      player->rect.w / 2, player->rect.h / 2};
+
+  SDL_RenderCopyEx(
+      renderer,
+      player->texture,
+      NULL,
+      &player->rect,
+      angleDegrees,
+      &center,
+      SDL_FLIP_NONE);
 }
 
 void updatePlayer(Player *player)
