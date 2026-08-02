@@ -13,7 +13,7 @@ void initPlayer(Player *player, SDL_Renderer *renderer)
   player->rect.y = 100;
   player->rect.w = 50;
   player->rect.h = 50;
-  player->speed = 4;
+  player->speed = 3;
   player->movingUp = SDL_FALSE;
   player->movingDown = SDL_FALSE;
   player->movingLeft = SDL_FALSE;
@@ -26,6 +26,7 @@ void initPlayer(Player *player, SDL_Renderer *renderer)
     printf("Failed to load texture: %s\n", IMG_GetError());
   }
 }
+
 void drawPlayer(Player *player, SDL_Renderer *renderer)
 {
 
@@ -53,7 +54,7 @@ void drawPlayer(Player *player, SDL_Renderer *renderer)
       &player->rect,
       angleDegrees,
       &center,
-      SDL_FLIP_NONE);
+      SDL_FLIP_VERTICAL);
 }
 
 void updatePlayer(Player *player)
