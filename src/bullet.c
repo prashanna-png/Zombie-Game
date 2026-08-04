@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include "bullet.h"
+#include "player.h"
 #include <math.h>
 
 void initBullet(Bullet *bullet, SDL_Renderer *renderer)
@@ -41,25 +42,26 @@ void updateBullet(Bullet *bullet)
   }
 }
 
-void fireBullet(Bullet *bullet, float startX, float startY, float targetX, float targetY)
+void fireBullet(Bullet *bullet, Player *player, int mouseX, int mouseY)
 {
-  bullet->rect.x = startX;
-  bullet->rect.y = startY;
+  bullet->active = SDL_TRUE;
 
-  float dx = targetX - startX;
-  float dy = targetY - startY;
-  float length = sqrtf(dx * dx + dy * dy);
+  float centerX = player->rect.x + player->rect.w / 2.0f;
+  float centerY = player->rect.y + player->rect.h / 2.0f;
+
+  bullet->rect.x = centerX - bullet->rect.w / 2.0f;
+  bullet->rect.y = centerY - bullet->rect.h / 2.0f;
+
+  SDL_GetMouseState(&mouseX, &mouseY);
+
+  bullet->dy = mouseY - centerY;
+  bullet->dx = mouseX - centerX;
+
+  float length = sqrt(bullet->dx * bullet->dx + bullet->dy * bullet->dy);
 
   if (length != 0)
   {
-    bullet->dx = dx / length;
-    bullet->dy = dy / length;
+    bullet->dx /= length;
+    bullet->dy /= length;
   }
-  else
-  {
-    bullet->dx = 0;
-    bullet->dy = 0;
-  }
-
-  bullet->active = SDL_TRUE;
 }
