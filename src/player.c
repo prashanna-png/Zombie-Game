@@ -11,7 +11,7 @@ void initPlayer(Player *player, SDL_Renderer *renderer)
 
   player->rect.x = 100;
   player->rect.y = 100;
-  player->rect.w = 50;
+  player->rect.w = 40;
   player->rect.h = 50;
   player->speed = 3;
   player->movingUp = SDL_FALSE;

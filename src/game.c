@@ -60,6 +60,11 @@ void runGame(void)
     SDL_Quit();
     return;
   }
+  else
+  {
+    printf("Renderer created successfully\n");
+    
+  }
 
   SDL_bool running = SDL_TRUE;
   SDL_Event event;
@@ -115,7 +120,6 @@ void runGame(void)
     }
 
     updatePlayer(&player);
-    
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
