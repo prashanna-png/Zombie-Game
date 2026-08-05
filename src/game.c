@@ -13,11 +13,13 @@
 #include "game.h"
 #include "player.h"
 #include "bullet.h"
+#include "zombie.h"
 
 #define MAX_BULLETS 100
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
+static SDL_Texture *backgroundTexture = NULL;
 
 void runGame(void)
 {
@@ -57,6 +59,17 @@ void runGame(void)
       -1,
       SDL_RENDERER_ACCELERATED);
 
+  backgroundTexture = IMG_LoadTexture(renderer, "assets/map/background.jpg");
+
+  if (!backgroundTexture)
+  {
+    printf("Failed to load background texture: %s\n", IMG_GetError());
+  }
+  else
+  {
+    printf("Background texture loaded successfully\n");
+  }
+
   if (!renderer)
   {
     printf("Renderer creation failed: %s\n", SDL_GetError());
@@ -79,6 +92,12 @@ void runGame(void)
   for (int i = 0; i < MAX_BULLETS; i++)
   {
     initBullet(&bullet[i], renderer);
+  }
+
+  Zombie zombie;
+  for (int i = 0; i < 5; i++)
+  {
+    initZombie(&zombie, renderer);
   }
 
   while (running)
@@ -156,6 +175,11 @@ void runGame(void)
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+    if (backgroundTexture)
+    {
+      SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
+    }
+
     drawPlayer(&player, renderer);
     for (int i = 0; i < MAX_BULLETS; i++)
     {
@@ -165,7 +189,11 @@ void runGame(void)
     SDL_RenderPresent(renderer);
     SDL_Delay(16);
   }
-
+  if (backgroundTexture)
+  {
+    SDL_DestroyTexture(backgroundTexture);
+    backgroundTexture = NULL;
+  }
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();

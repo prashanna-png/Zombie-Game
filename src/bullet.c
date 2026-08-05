@@ -9,8 +9,8 @@ void initBullet(Bullet *bullet, SDL_Renderer *renderer)
   bullet->active = SDL_FALSE;
   bullet->speed = 10;
 
-  bullet->rect.w = 2.0f;
-  bullet->rect.h = 2.0f;
+  bullet->rect.w = 6.0f;
+  bullet->rect.h = 6.0f;
 }
 
 void drawBullet(Bullet *bullet, SDL_Renderer *renderer)
@@ -48,7 +48,7 @@ void fireBullet(Bullet *bullet, Player *player, int mouseX, int mouseY)
 
   float centerX = player->rect.x + player->rect.w / 2.0f;
   float centerY = player->rect.y + player->rect.h / 2.0f;
-  
+
   bullet->rect.x = centerX - bullet->rect.w / 2.0f;
   bullet->rect.y = centerY - bullet->rect.h / 2.0f;
 
