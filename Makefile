@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -Iinclude `sdl2-config --cflags`
 LDFLAGS = `sdl2-config --libs` -lSDL2_image -lm
 
-SRC = src/main.c src/game.c src/player.c
+SRC = src/main.c src/game.c src/player.c src/bullet.c
 
 
 TARGET = build/zombie-survival

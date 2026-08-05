@@ -5,12 +5,12 @@
 
 void initBullet(Bullet *bullet, SDL_Renderer *renderer)
 {
-
+  (void)renderer; // Unused parameter
   bullet->active = SDL_FALSE;
   bullet->speed = 10;
 
-  bullet->rect.w = 10.0f;
-  bullet->rect.h = 7.0f;
+  bullet->rect.w = 2.0f;
+  bullet->rect.h = 2.0f;
 }
 
 void drawBullet(Bullet *bullet, SDL_Renderer *renderer)
@@ -48,20 +48,22 @@ void fireBullet(Bullet *bullet, Player *player, int mouseX, int mouseY)
 
   float centerX = player->rect.x + player->rect.w / 2.0f;
   float centerY = player->rect.y + player->rect.h / 2.0f;
-
+  
   bullet->rect.x = centerX - bullet->rect.w / 2.0f;
   bullet->rect.y = centerY - bullet->rect.h / 2.0f;
 
-  SDL_GetMouseState(&mouseX, &mouseY);
+  float dx = mouseX - centerX;
+  float dy = mouseY - centerY;
 
-  bullet->dy = mouseY - centerY;
-  bullet->dx = mouseX - centerX;
+  float length = sqrt(dx * dx + dy * dy);
 
-  float length = sqrt(bullet->dx * bullet->dx + bullet->dy * bullet->dy);
-
-  if (length != 0)
+  if (length == 0)
   {
-    bullet->dx /= length;
-    bullet->dy /= length;
+    bullet->dx = 0;
+    bullet->dy = 0;
+    return;
   }
+
+  bullet->dx = dx / length;
+  bullet->dy = dy / length;
 }

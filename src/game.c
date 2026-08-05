@@ -7,10 +7,14 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include "game.h"
-#include "player.h"
 #include <stdio.h>
 #include <math.h>
+
+#include "game.h"
+#include "player.h"
+#include "bullet.h"
+
+#define MAX_BULLETS 100
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
@@ -63,7 +67,6 @@ void runGame(void)
   else
   {
     printf("Renderer created successfully\n");
-    
   }
 
   SDL_bool running = SDL_TRUE;
@@ -71,6 +74,12 @@ void runGame(void)
 
   Player player;
   initPlayer(&player, renderer);
+
+  Bullet bullet[MAX_BULLETS];
+  for (int i = 0; i < MAX_BULLETS; i++)
+  {
+    initBullet(&bullet[i], renderer);
+  }
 
   while (running)
   {
@@ -117,14 +126,41 @@ void runGame(void)
           break;
         }
       }
+
+      if (event.type == SDL_MOUSEBUTTONDOWN)
+      {
+        if (event.button.button == SDL_BUTTON_LEFT)
+        {
+          int mouseX, mouseY;
+          SDL_GetMouseState(&mouseX, &mouseY);
+
+          for (int i = 0; i < MAX_BULLETS; i++)
+          {
+            if (bullet[i].active == SDL_FALSE)
+            {
+              fireBullet(&bullet[i], &player, mouseX, mouseY);
+              break;
+            }
+          }
+        }
+      }
     }
 
     updatePlayer(&player);
+
+    for (int i = 0; i < MAX_BULLETS; i++)
+    {
+      updateBullet(&bullet[i]);
+    }
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
     drawPlayer(&player, renderer);
+    for (int i = 0; i < MAX_BULLETS; i++)
+    {
+      drawBullet(&bullet[i], renderer);
+    }
 
     SDL_RenderPresent(renderer);
     SDL_Delay(16);
