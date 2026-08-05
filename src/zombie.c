@@ -1,12 +1,13 @@
 #include "zombie.h"
 #include <SDL2/SDL_image.h>
+#include <math.h>
 
 void initZombie(Zombie *zombie, SDL_Renderer *renderer)
 {
   zombie->rect.x = 400;
   zombie->rect.y = 300;
-  zombie->rect.w = 50;
-  zombie->rect.h = 40;
+  zombie->rect.w = 70;
+  zombie->rect.h = 60;
   zombie->speed = 2;
   zombie->health = 100;
   zombie->alive = SDL_TRUE;
@@ -21,8 +22,37 @@ void initZombie(Zombie *zombie, SDL_Renderer *renderer)
 
 void drawZombie(Zombie *zombie, SDL_Renderer *renderer)
 {
-  if (zombie->alive == SDL_TRUE)
+  if (!zombie->alive)
   {
-    SDL_RenderCopy(renderer, zombie->texture, NULL, &zombie->rect);
+    return;
   }
+  SDL_RenderCopy(renderer, zombie->texture, NULL, &zombie->rect);
+}
+
+void updateZombie(Zombie *zombie, SDL_Rect playerRect)
+{
+  if (!zombie->alive)
+  {
+    return;
+  }
+
+  float playerCenterX = playerRect.x + playerRect.w / 2;
+  float playerCenterY = playerRect.y + playerRect.h / 2;
+
+  float zombieCenterX = zombie->rect.x + zombie->rect.w / 2;
+  float zombieCenterY = zombie->rect.y + zombie->rect.h / 2;
+
+  float dx = playerCenterX - zombieCenterX;
+  float dy = playerCenterY - zombieCenterY;
+
+  float length = sqrt(dx * dx + dy * dy);
+
+  if (length != 0)
+  {
+    dx /= length;
+    dy /= length;
+  }
+
+  zombie->rect.x += dx * zombie->speed;
+  zombie->rect.y += dy * zombie->speed;
 }
