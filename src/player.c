@@ -45,10 +45,11 @@ void drawPlayer(Player *player, SDL_Renderer *renderer)
   float angleRadians = atan2(dy, dx);
   float angleDegrees = angleRadians * (180.0f / M_PI);
 
-  SDL_Point center = {
-      player->rect.w / 2, player->rect.h / 2};
+  SDL_FPoint center = {
+      player->rect.w / 2.0f,
+      player->rect.h / 2.0f};
 
-  SDL_RenderCopyEx(
+    SDL_RenderCopyExF(
       renderer,
       player->texture,
       NULL,

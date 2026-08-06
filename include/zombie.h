@@ -20,6 +20,6 @@ typedef struct
 
 void initZombie(Zombie *zombie, SDL_Renderer *renderer);
 void drawZombie(Zombie *zombie, SDL_Renderer *renderer);
-void updateZombie(Zombie *zombie, SDL_Rect playerRect);
+void updateZombie(Zombie *zombie, SDL_FRect playerRect);
 
 #endif

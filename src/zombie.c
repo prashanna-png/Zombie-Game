@@ -31,7 +31,7 @@ void drawZombie(Zombie *zombie, SDL_Renderer *renderer)
   SDL_RenderCopyF(renderer, zombie->texture, NULL, &zombie->rect);
 }
 
-void updateZombie(Zombie *zombie, SDL_Rect playerRect)
+void updateZombie(Zombie *zombie, SDL_FRect playerRect)
 {
   if (!zombie->alive)
   {

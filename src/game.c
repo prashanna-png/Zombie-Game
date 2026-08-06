@@ -80,7 +80,7 @@ void runGame(void)
       SDL_WINDOWPOS_CENTERED,
       1024,
       768,
-      SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+      SDL_WINDOW_RESIZABLE);
 
   if (!window)
   {
