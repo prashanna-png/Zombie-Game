@@ -1,14 +1,15 @@
 #include "zombie.h"
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL.h>
 #include <math.h>
 
 void initZombie(Zombie *zombie, SDL_Renderer *renderer)
 {
   zombie->rect.x = 400;
   zombie->rect.y = 300;
-  zombie->rect.w = 70;
+  zombie->rect.w = 60;
   zombie->rect.h = 60;
-  zombie->speed = 2;
+  zombie->speed = 1;
   zombie->health = 100;
   zombie->alive = SDL_TRUE;
 
@@ -26,7 +27,7 @@ void drawZombie(Zombie *zombie, SDL_Renderer *renderer)
   {
     return;
   }
-  SDL_RenderCopy(renderer, zombie->texture, NULL, &zombie->rect);
+  SDL_RenderCopyF(renderer, zombie->texture, NULL, &zombie->rect);
 }
 
 void updateZombie(Zombie *zombie, SDL_Rect playerRect)

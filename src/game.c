@@ -16,6 +16,7 @@
 #include "zombie.h"
 
 #define MAX_BULLETS 100
+#define MAX_ZOMBIES 20
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
@@ -94,10 +95,10 @@ void runGame(void)
     initBullet(&bullet[i], renderer);
   }
 
-  Zombie zombie;
-  for (int i = 0; i < 5; i++)
+  Zombie zombie[MAX_ZOMBIES];
+  for (int i = 0; i < MAX_ZOMBIES; i++)
   {
-    initZombie(&zombie, renderer);
+    initZombie(&zombie[i], renderer);
   }
 
   while (running)
@@ -167,6 +168,11 @@ void runGame(void)
 
     updatePlayer(&player);
 
+    for (int i = 0; i < MAX_ZOMBIES; i++)
+    {
+      updateZombie(&zombie[i], player.rect);
+    }
+
     for (int i = 0; i < MAX_BULLETS; i++)
     {
       updateBullet(&bullet[i]);
@@ -178,6 +184,11 @@ void runGame(void)
     if (backgroundTexture)
     {
       SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
+    }
+
+    for (int i = 0; i < MAX_ZOMBIES; i++)
+    {
+      drawZombie(&zombie[i], renderer);
     }
 
     drawPlayer(&player, renderer);
