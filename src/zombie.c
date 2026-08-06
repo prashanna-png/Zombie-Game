@@ -12,6 +12,7 @@ void initZombie(Zombie *zombie, SDL_Renderer *renderer)
   zombie->speed = 1;
   zombie->health = 100;
   zombie->alive = SDL_TRUE;
+  zombie->lastAttackTime = 0;
 
   zombie->texture = IMG_LoadTexture(renderer, "assets/zombie/zombie.png");
 

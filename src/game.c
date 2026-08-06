@@ -8,7 +8,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <stdio.h>
-#include <math.h>
+#include <stdlib.h>
 #include <time.h>
 
 #include "game.h"
@@ -17,24 +17,56 @@
 #include "zombie.h"
 
 #define MAX_BULLETS 100
-#define MAX_ZOMBIES 20
+#define MAX_ZOMBIES 15
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Texture *backgroundTexture = NULL;
 
+void drawHealthBar(SDL_Renderer *renderer, Player *player)
+{
+  SDL_FRect background;
+  background.x = 20;
+  background.y = 20;
+  background.w = 200;
+  background.h = 20;
+
+  SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);
+  SDL_RenderFillRectF(renderer, &background);
+
+  SDL_FRect foreground;
+  foreground.x = background.x;
+  foreground.y = background.y;
+  foreground.w = (player->health / 100.0f) * 200;
+  foreground.h = background.h;
+
+  if (player->health >= 70)
+  {
+    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green
+  }
+  else if (player->health >= 30)
+  {
+    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // Yellow
+  }
+  else
+  {
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red
+  }
+  SDL_RenderFillRectF(renderer, &foreground);
+}
+
 void runGame(void)
 {
   srand(time(NULL));
-  if (SDL_Init(SDL_INIT_VIDEO) == 0)
-  {
-    printf("SDL initialized succesfully\n");
-  }
-  else
+
+  if (SDL_Init(SDL_INIT_VIDEO) != 0)
   {
     printf("SDL Initialization Error: %s\n", SDL_GetError());
     return;
   }
+
+  printf("SDL initialized successfully\n");
+
   if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG))
   {
     printf("SDL_image Initialization Error: %s\n", IMG_GetError());
@@ -53,6 +85,7 @@ void runGame(void)
   if (!window)
   {
     printf("Window creation failed: %s\n", SDL_GetError());
+    IMG_Quit();
     SDL_Quit();
     return;
   }
@@ -62,7 +95,18 @@ void runGame(void)
       -1,
       SDL_RENDERER_ACCELERATED);
 
-  
+  if (!renderer)
+  {
+    printf("Renderer creation failed: %s\n", SDL_GetError());
+    SDL_DestroyWindow(window);
+    IMG_Quit();
+    SDL_Quit();
+    return;
+  }
+
+  printf("Renderer created successfully\n");
+
+  backgroundTexture = IMG_LoadTexture(renderer, "assets/map/background.jpg");
 
   if (!backgroundTexture)
   {
@@ -72,20 +116,6 @@ void runGame(void)
   {
     printf("Background texture loaded successfully\n");
   }
-
-  if (!renderer)
-  {
-    printf("Renderer creation failed: %s\n", SDL_GetError());
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-    return;
-  }
-  else
-  {
-    printf("Renderer created successfully\n");
-  }
-
-  backgroundTexture = IMG_LoadTexture(renderer, "assets/map/background.jpg");
 
   SDL_bool running = SDL_TRUE;
   SDL_Event event;
@@ -102,7 +132,6 @@ void runGame(void)
   Zombie zombie[MAX_ZOMBIES];
   for (int i = 0; i < MAX_ZOMBIES; i++)
   {
-
     initZombie(&zombie[i], renderer);
 
     int side = rand() % 4;
@@ -113,14 +142,17 @@ void runGame(void)
       zombie[i].rect.x = rand() % (1024 - (int)zombie[i].rect.w);
       zombie[i].rect.y = -zombie[i].rect.h;
       break;
+
     case 1:
       zombie[i].rect.x = rand() % (1024 - (int)zombie[i].rect.w);
       zombie[i].rect.y = 768;
       break;
+
     case 2:
       zombie[i].rect.x = -zombie[i].rect.w;
       zombie[i].rect.y = rand() % (768 - (int)zombie[i].rect.h);
       break;
+
     case 3:
       zombie[i].rect.x = 1024;
       zombie[i].rect.y = rand() % (768 - (int)zombie[i].rect.h);
@@ -144,12 +176,15 @@ void runGame(void)
         case SDLK_w:
           player.movingUp = SDL_TRUE;
           break;
+
         case SDLK_s:
           player.movingDown = SDL_TRUE;
           break;
+
         case SDLK_a:
           player.movingLeft = SDL_TRUE;
           break;
+
         case SDLK_d:
           player.movingRight = SDL_TRUE;
           break;
@@ -162,12 +197,15 @@ void runGame(void)
         case SDLK_w:
           player.movingUp = SDL_FALSE;
           break;
+
         case SDLK_s:
           player.movingDown = SDL_FALSE;
           break;
+
         case SDLK_a:
           player.movingLeft = SDL_FALSE;
           break;
+
         case SDLK_d:
           player.movingRight = SDL_FALSE;
           break;
@@ -183,7 +221,7 @@ void runGame(void)
 
           for (int i = 0; i < MAX_BULLETS; i++)
           {
-            if (bullet[i].active == SDL_FALSE)
+            if (!bullet[i].active)
             {
               fireBullet(&bullet[i], &player, mouseX, mouseY);
               break;
@@ -224,12 +262,42 @@ void runGame(void)
           {
             zombie[j].alive = SDL_FALSE;
           }
+
           break;
         }
       }
     }
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    Uint32 currentTime = SDL_GetTicks();
+
+    for (int i = 0; i < MAX_ZOMBIES; i++)
+    {
+      if (!zombie[i].alive)
+        continue;
+
+      if (SDL_HasIntersectionF(&zombie[i].rect, &player.rect))
+      {
+        if (currentTime - zombie[i].lastAttackTime >= 1000)
+        {
+          player.health -= 20;
+
+          if (player.health < 0)
+          {
+            player.health = 0;
+          }
+
+          zombie[i].lastAttackTime = currentTime;
+        }
+      }
+    }
+
+    if (player.health <= 0)
+    {
+      player.health = 0;
+      printf("Game Over! You died!\n");
+      running = SDL_FALSE;
+    }
+
     SDL_RenderClear(renderer);
 
     if (backgroundTexture)
@@ -243,21 +311,27 @@ void runGame(void)
     }
 
     drawPlayer(&player, renderer);
+
     for (int i = 0; i < MAX_BULLETS; i++)
     {
       drawBullet(&bullet[i], renderer);
     }
 
+    drawHealthBar(renderer, &player);
+
     SDL_RenderPresent(renderer);
+
     SDL_Delay(16);
   }
+
   if (backgroundTexture)
   {
     SDL_DestroyTexture(backgroundTexture);
-    backgroundTexture = NULL;
   }
+
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
-  SDL_Quit();
+
   IMG_Quit();
+  SDL_Quit();
 }

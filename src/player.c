@@ -18,6 +18,7 @@ void initPlayer(Player *player, SDL_Renderer *renderer)
   player->movingDown = SDL_FALSE;
   player->movingLeft = SDL_FALSE;
   player->movingRight = SDL_FALSE;
+  player->health = 100;
 
   player->texture = IMG_LoadTexture(renderer, "assets/player/player-stand.png");
 

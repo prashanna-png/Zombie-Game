@@ -15,6 +15,8 @@ typedef struct
   SDL_bool movingLeft;
   SDL_bool movingRight;
 
+  int health;
+
 } Player;
 
 void initPlayer(Player *player, SDL_Renderer *renderer);

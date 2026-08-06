@@ -17,6 +17,7 @@ typedef struct
 
   SDL_bool active;
 
+
 } Bullet;
 
 void initBullet(Bullet *bullet, SDL_Renderer *renderer);

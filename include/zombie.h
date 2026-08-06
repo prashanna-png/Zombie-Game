@@ -14,6 +14,8 @@ typedef struct
 
   SDL_bool alive;
 
+  Uint32 lastAttackTime;
+
 } Zombie;
 
 void initZombie(Zombie *zombie, SDL_Renderer *renderer);
