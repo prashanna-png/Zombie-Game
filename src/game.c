@@ -9,6 +9,7 @@
 #include <SDL2/SDL_image.h>
 #include <stdio.h>
 #include <math.h>
+#include <time.h>
 
 #include "game.h"
 #include "player.h"
@@ -24,6 +25,7 @@ static SDL_Texture *backgroundTexture = NULL;
 
 void runGame(void)
 {
+  srand(time(NULL));
   if (SDL_Init(SDL_INIT_VIDEO) == 0)
   {
     printf("SDL initialized succesfully\n");
@@ -60,7 +62,7 @@ void runGame(void)
       -1,
       SDL_RENDERER_ACCELERATED);
 
-  backgroundTexture = IMG_LoadTexture(renderer, "assets/map/background.jpg");
+  
 
   if (!backgroundTexture)
   {
@@ -83,6 +85,8 @@ void runGame(void)
     printf("Renderer created successfully\n");
   }
 
+  backgroundTexture = IMG_LoadTexture(renderer, "assets/map/background.jpg");
+
   SDL_bool running = SDL_TRUE;
   SDL_Event event;
 
@@ -98,7 +102,30 @@ void runGame(void)
   Zombie zombie[MAX_ZOMBIES];
   for (int i = 0; i < MAX_ZOMBIES; i++)
   {
+
     initZombie(&zombie[i], renderer);
+
+    int side = rand() % 4;
+
+    switch (side)
+    {
+    case 0:
+      zombie[i].rect.x = rand() % (1024 - (int)zombie[i].rect.w);
+      zombie[i].rect.y = -zombie[i].rect.h;
+      break;
+    case 1:
+      zombie[i].rect.x = rand() % (1024 - (int)zombie[i].rect.w);
+      zombie[i].rect.y = 768;
+      break;
+    case 2:
+      zombie[i].rect.x = -zombie[i].rect.w;
+      zombie[i].rect.y = rand() % (768 - (int)zombie[i].rect.h);
+      break;
+    case 3:
+      zombie[i].rect.x = 1024;
+      zombie[i].rect.y = rand() % (768 - (int)zombie[i].rect.h);
+      break;
+    }
   }
 
   while (running)
@@ -178,6 +205,30 @@ void runGame(void)
       updateBullet(&bullet[i]);
     }
 
+    for (int i = 0; i < MAX_BULLETS; i++)
+    {
+      if (!bullet[i].active)
+        continue;
+
+      for (int j = 0; j < MAX_ZOMBIES; j++)
+      {
+        if (!zombie[j].alive)
+          continue;
+
+        if (SDL_HasIntersectionF(&bullet[i].rect, &zombie[j].rect))
+        {
+          zombie[j].health -= 25;
+          bullet[i].active = SDL_FALSE;
+
+          if (zombie[j].health <= 0)
+          {
+            zombie[j].alive = SDL_FALSE;
+          }
+          break;
+        }
+      }
+    }
+
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
@@ -208,4 +259,5 @@ void runGame(void)
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();
+  IMG_Quit();
 }
