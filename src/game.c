@@ -80,7 +80,7 @@ void runGame(void)
       SDL_WINDOWPOS_CENTERED,
       1024,
       768,
-      SDL_WINDOW_SHOWN);
+      SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
   if (!window)
   {
@@ -106,7 +106,7 @@ void runGame(void)
 
   printf("Renderer created successfully\n");
 
-  backgroundTexture = IMG_LoadTexture(renderer, "assets/map/background.jpg");
+  backgroundTexture = IMG_LoadTexture(renderer, "assets/map/backgroundtry.jpeg");
 
   if (!backgroundTexture)
   {
