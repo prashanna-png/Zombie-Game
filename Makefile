@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Iinclude `sdl2-config --cflags`
-LDFLAGS = `sdl2-config --libs` -lSDL2_image -lm
+LDFLAGS = `sdl2-config --libs` -lSDL2_image -lSDL2_ttf -lm 
 
 SRC = src/main.c src/game.c src/player.c src/bullet.c src/zombie.c
 

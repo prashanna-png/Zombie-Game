@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <SDL2/SDL_ttf.h>
 
 #include "game.h"
 #include "player.h"
@@ -18,7 +19,7 @@
 
 #define MAX_BULLETS 100
 #define MAX_ZOMBIES 15
-#define ZOMBIE_SPAWN_INTERVAL 1500
+#define ZOMBIE_SPAWN_INTERVAL 10
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
@@ -85,6 +86,47 @@ void drawHealthBar(SDL_Renderer *renderer, Player *player)
   SDL_RenderFillRectF(renderer, &foreground);
 }
 
+void drawKills(SDL_Renderer *renderer, TTF_Font *font, int kills)
+{
+  char text[50];
+  snprintf(text, sizeof(text), "Kills: %d", kills);
+
+  SDL_Color white = {0, 0, 0, 255};
+
+  SDL_Surface *surface = TTF_RenderText_Solid(
+      font,
+      text,
+      white);
+
+  if (!surface)
+  {
+    printf("failed to create text surface: %s\n", TTF_GetError());
+    return;
+  }
+  SDL_Texture *texture = SDL_CreateTextureFromSurface(
+      renderer,
+      surface);
+
+  if (!texture)
+  {
+    printf("failed to create text texture: %s\n", SDL_GetError());
+    SDL_FreeSurface(surface);
+    return;
+  }
+
+  SDL_FRect textRect;
+
+  textRect.x = 20;
+  textRect.y = 50;
+  textRect.w = surface->w;
+  textRect.h = surface->h;
+
+  SDL_RenderCopyF(renderer, texture, NULL, &textRect);
+
+  SDL_DestroyTexture(texture);
+  SDL_FreeSurface(surface);
+}
+
 void runGame(void)
 {
   srand(time(NULL));
@@ -100,6 +142,14 @@ void runGame(void)
   if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG))
   {
     printf("SDL_image Initialization Error: %s\n", IMG_GetError());
+    SDL_Quit();
+    return;
+  }
+
+  if (TTF_Init() != 0)
+  {
+    printf("SDL_ttf Initialization Error: %s\n", TTF_GetError());
+    IMG_Quit();
     SDL_Quit();
     return;
   }
@@ -147,11 +197,20 @@ void runGame(void)
     printf("Background texture loaded successfully\n");
   }
 
+  TTF_Font *font = TTF_OpenFont("assets/fonts/Pixeled.ttf", 14);
+
+  if (!font)
+  {
+    printf("failed to load font: %s\n", TTF_GetError());
+  }
+
   SDL_bool running = SDL_TRUE;
   SDL_Event event;
 
   Player player;
   initPlayer(&player, renderer);
+
+  int kill = 0;
 
   Bullet bullet[MAX_BULLETS];
   for (int i = 0; i < MAX_BULLETS; i++)
@@ -278,13 +337,15 @@ void runGame(void)
 
         if (SDL_HasIntersectionF(&bullet[i].rect, &zombie[j].rect))
         {
-          zombie[j].health -= 30;
+          zombie[j].health -= 35;
           bullet[i].active = SDL_FALSE;
 
           if (zombie[j].health <= 0)
           {
             zombie[j].alive = SDL_FALSE;
             zombie[j].respawnTime = currentTime + 2000;
+
+            kill++;
           }
 
           break;
@@ -342,6 +403,7 @@ void runGame(void)
     }
 
     drawHealthBar(renderer, &player);
+    drawKills(renderer, font, kill);
 
     SDL_RenderPresent(renderer);
 
@@ -355,6 +417,9 @@ void runGame(void)
 
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
+
+  TTF_CloseFont(font);
+  TTF_Quit();
 
   IMG_Quit();
   SDL_Quit();
