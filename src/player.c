@@ -49,7 +49,7 @@ void drawPlayer(Player *player, SDL_Renderer *renderer)
       player->rect.w / 2.0f,
       player->rect.h / 2.0f};
 
-    SDL_RenderCopyExF(
+  SDL_RenderCopyExF(
       renderer,
       player->texture,
       NULL,

@@ -18,11 +18,41 @@
 
 #define MAX_BULLETS 100
 #define MAX_ZOMBIES 15
+#define ZOMBIE_SPAWN_INTERVAL 1500
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Texture *backgroundTexture = NULL;
 
+void spawnZombie(Zombie *zombie, SDL_Renderer *renderer)
+{
+  int side = rand() % 4;
+
+  initZombie(zombie, renderer);
+
+  switch (side)
+  {
+  case 0:
+    zombie->rect.x = rand() % (1024 - (int)zombie->rect.w);
+    zombie->rect.y = -zombie->rect.h;
+    break;
+
+  case 1:
+    zombie->rect.x = rand() % (1024 - (int)zombie->rect.w);
+    zombie->rect.y = 768;
+    break;
+
+  case 2:
+    zombie->rect.x = -zombie->rect.w;
+    zombie->rect.y = rand() % (768 - (int)zombie->rect.h);
+    break;
+
+  case 3:
+    zombie->rect.x = 1024;
+    zombie->rect.y = rand() % (768 - (int)zombie->rect.h);
+    break;
+  }
+}
 void drawHealthBar(SDL_Renderer *renderer, Player *player)
 {
   SDL_FRect background;
@@ -133,32 +163,10 @@ void runGame(void)
   for (int i = 0; i < MAX_ZOMBIES; i++)
   {
     initZombie(&zombie[i], renderer);
-
-    int side = rand() % 4;
-
-    switch (side)
-    {
-    case 0:
-      zombie[i].rect.x = rand() % (1024 - (int)zombie[i].rect.w);
-      zombie[i].rect.y = -zombie[i].rect.h;
-      break;
-
-    case 1:
-      zombie[i].rect.x = rand() % (1024 - (int)zombie[i].rect.w);
-      zombie[i].rect.y = 768;
-      break;
-
-    case 2:
-      zombie[i].rect.x = -zombie[i].rect.w;
-      zombie[i].rect.y = rand() % (768 - (int)zombie[i].rect.h);
-      break;
-
-    case 3:
-      zombie[i].rect.x = 1024;
-      zombie[i].rect.y = rand() % (768 - (int)zombie[i].rect.h);
-      break;
-    }
+    zombie[i].alive = SDL_FALSE;
   }
+
+  Uint32 lastSpawnTime = SDL_GetTicks();
 
   while (running)
   {
@@ -233,6 +241,21 @@ void runGame(void)
 
     updatePlayer(&player);
 
+    Uint32 currentTime = SDL_GetTicks();
+
+    if (currentTime - lastSpawnTime >= ZOMBIE_SPAWN_INTERVAL)
+    {
+      for (int i = 0; i < MAX_ZOMBIES; i++)
+      {
+        if (!zombie[i].alive && currentTime >= zombie[i].respawnTime)
+        {
+          spawnZombie(&zombie[i], renderer);
+          lastSpawnTime = currentTime;
+          break;
+        }
+      }
+    }
+
     for (int i = 0; i < MAX_ZOMBIES; i++)
     {
       updateZombie(&zombie[i], player.rect);
@@ -255,12 +278,13 @@ void runGame(void)
 
         if (SDL_HasIntersectionF(&bullet[i].rect, &zombie[j].rect))
         {
-          zombie[j].health -= 25;
+          zombie[j].health -= 30;
           bullet[i].active = SDL_FALSE;
 
           if (zombie[j].health <= 0)
           {
             zombie[j].alive = SDL_FALSE;
+            zombie[j].respawnTime = currentTime + 2000;
           }
 
           break;
@@ -268,7 +292,7 @@ void runGame(void)
       }
     }
 
-    Uint32 currentTime = SDL_GetTicks();
+    currentTime = SDL_GetTicks();
 
     for (int i = 0; i < MAX_ZOMBIES; i++)
     {
@@ -279,7 +303,7 @@ void runGame(void)
       {
         if (currentTime - zombie[i].lastAttackTime >= 1000)
         {
-          player.health -= 20;
+          player.health -= 10;
 
           if (player.health < 0)
           {

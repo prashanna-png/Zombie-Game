@@ -16,6 +16,8 @@ typedef struct
 
   Uint32 lastAttackTime;
 
+  Uint32 respawnTime;
+
 } Zombie;
 
 void initZombie(Zombie *zombie, SDL_Renderer *renderer);
