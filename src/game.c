@@ -127,7 +127,47 @@ void drawKills(SDL_Renderer *renderer, TTF_Font *font, int kills)
   SDL_FreeSurface(surface);
 }
 
+void drawGameOver(SDL_Renderer *renderer, TTF_Font *font, int kill)
+{
+  SDL_Color white = {255, 255, 255, 255};
+
+  SDL_Surface *surface = TTF_RenderText_Solid(
+      font,
+      "Game Over",
+      white);
+
+  if (!surface)
+  {
+    printf("failed to create text surface: %s\n", TTF_GetError());
+    return;
+  }
+  SDL_Texture *texture = SDL_CreateTextureFromSurface(
+      renderer,
+      surface);
+
+  if (!texture)
+  {
+    printf("failed to create text texture: %s\n", SDL_GetError());
+    SDL_FreeSurface(surface);
+    return;
+  }
+
+  SDL_FRect textRect;
+
+  textRect.w = surface->w;
+  textRect.h = surface->h;
+
+  textRect.x = (1024 - textRect.w) / 2.0f;
+  textRect.y = 250;
+
+  SDL_RenderCopyF(renderer, texture, NULL, &textRect);
+
+  SDL_DestroyTexture(texture);
+  SDL_FreeSurface(surface);
+}
+
 void runGame(void)
+
 {
   srand(time(NULL));
 
@@ -205,6 +245,7 @@ void runGame(void)
   }
 
   SDL_bool running = SDL_TRUE;
+  SDL_bool gameOver = SDL_FALSE;
   SDL_Event event;
 
   Player player;
@@ -298,89 +339,91 @@ void runGame(void)
       }
     }
 
-    updatePlayer(&player);
-
-    Uint32 currentTime = SDL_GetTicks();
-
-    if (currentTime - lastSpawnTime >= ZOMBIE_SPAWN_INTERVAL)
+    if (!gameOver)
     {
+      updatePlayer(&player);
+
+      Uint32 currentTime = SDL_GetTicks();
+
+      if (currentTime - lastSpawnTime >= ZOMBIE_SPAWN_INTERVAL)
+      {
+        for (int i = 0; i < MAX_ZOMBIES; i++)
+        {
+          if (!zombie[i].alive && currentTime >= zombie[i].respawnTime)
+          {
+            spawnZombie(&zombie[i], renderer);
+            lastSpawnTime = currentTime;
+            break;
+          }
+        }
+      }
+
       for (int i = 0; i < MAX_ZOMBIES; i++)
       {
-        if (!zombie[i].alive && currentTime >= zombie[i].respawnTime)
-        {
-          spawnZombie(&zombie[i], renderer);
-          lastSpawnTime = currentTime;
-          break;
-        }
+        updateZombie(&zombie[i], player.rect);
       }
-    }
 
-    for (int i = 0; i < MAX_ZOMBIES; i++)
-    {
-      updateZombie(&zombie[i], player.rect);
-    }
-
-    for (int i = 0; i < MAX_BULLETS; i++)
-    {
-      updateBullet(&bullet[i]);
-    }
-
-    for (int i = 0; i < MAX_BULLETS; i++)
-    {
-      if (!bullet[i].active)
-        continue;
-
-      for (int j = 0; j < MAX_ZOMBIES; j++)
+      for (int i = 0; i < MAX_BULLETS; i++)
       {
-        if (!zombie[j].alive)
+        updateBullet(&bullet[i]);
+      }
+
+      for (int i = 0; i < MAX_BULLETS; i++)
+      {
+        if (!bullet[i].active)
           continue;
 
-        if (SDL_HasIntersectionF(&bullet[i].rect, &zombie[j].rect))
+        for (int j = 0; j < MAX_ZOMBIES; j++)
         {
-          zombie[j].health -= 35;
-          bullet[i].active = SDL_FALSE;
+          if (!zombie[j].alive)
+            continue;
 
-          if (zombie[j].health <= 0)
+          if (SDL_HasIntersectionF(&bullet[i].rect, &zombie[j].rect))
           {
-            zombie[j].alive = SDL_FALSE;
-            zombie[j].respawnTime = currentTime + 2000;
+            zombie[j].health -= 35;
+            bullet[i].active = SDL_FALSE;
 
-            kill++;
+            if (zombie[j].health <= 0)
+            {
+              zombie[j].alive = SDL_FALSE;
+              zombie[j].respawnTime = currentTime + 2000;
+
+              kill++;
+            }
+
+            break;
           }
-
-          break;
         }
       }
-    }
 
-    currentTime = SDL_GetTicks();
+      currentTime = SDL_GetTicks();
 
-    for (int i = 0; i < MAX_ZOMBIES; i++)
-    {
-      if (!zombie[i].alive)
-        continue;
-
-      if (SDL_HasIntersectionF(&zombie[i].rect, &player.rect))
+      for (int i = 0; i < MAX_ZOMBIES; i++)
       {
-        if (currentTime - zombie[i].lastAttackTime >= 1000)
+        if (!zombie[i].alive)
+          continue;
+
+        if (SDL_HasIntersectionF(&zombie[i].rect, &player.rect))
         {
-          player.health -= 10;
-
-          if (player.health < 0)
+          if (currentTime - zombie[i].lastAttackTime >= 1000)
           {
-            player.health = 0;
-          }
+            player.health -= 10;
 
-          zombie[i].lastAttackTime = currentTime;
+            if (player.health < 0)
+            {
+              player.health = 0;
+            }
+
+            zombie[i].lastAttackTime = currentTime;
+          }
         }
       }
-    }
 
-    if (player.health <= 0)
-    {
-      player.health = 0;
-      printf("Game Over! You died!\n");
-      running = SDL_FALSE;
+      if (player.health <= 0)
+      {
+        player.health = 0;
+        gameOver = SDL_TRUE;
+      }
     }
 
     SDL_RenderClear(renderer);
@@ -405,6 +448,11 @@ void runGame(void)
 
     drawHealthBar(renderer, &player);
     drawKills(renderer, font, kill);
+
+    if (gameOver)
+    {
+      drawGameOver(renderer, font, kill);
+    }
 
     SDL_RenderPresent(renderer);
 
