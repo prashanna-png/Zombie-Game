@@ -58,3 +58,30 @@ void updateZombie(Zombie *zombie, SDL_FRect playerRect)
   zombie->rect.x += dx * zombie->speed;
   zombie->rect.y += dy * zombie->speed;
 }
+
+void drawZombieHealthBar(Zombie *zombie, SDL_Renderer *renderer)
+{
+  if (!zombie->alive)
+  {
+    return;
+  }
+  SDL_FRect background;
+
+  background.x = zombie->rect.x;
+  background.y = zombie->rect.y - 10;
+  background.w = zombie->rect.w;
+  background.h = 6;
+
+  SDL_SetRenderDrawColor(renderer, 70, 70, 70, 255);
+  SDL_RenderFillRectF(renderer, &background);
+
+  SDL_FRect foreground;
+
+  foreground.x = background.x;
+  foreground.y = background.y;
+  foreground.w = (zombie->health / 100.0f) * background.w;
+  foreground.h = background.h;
+
+  SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+  SDL_RenderFillRectF(renderer, &foreground);
+}

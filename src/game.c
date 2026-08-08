@@ -18,8 +18,8 @@
 #include "zombie.h"
 
 #define MAX_BULLETS 100
-#define MAX_ZOMBIES 15
-#define ZOMBIE_SPAWN_INTERVAL 10
+#define MAX_ZOMBIES 20
+#define ZOMBIE_SPAWN_INTERVAL 50
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
@@ -393,6 +393,7 @@ void runGame(void)
     for (int i = 0; i < MAX_ZOMBIES; i++)
     {
       drawZombie(&zombie[i], renderer);
+      drawZombieHealthBar(&zombie[i], renderer);
     }
 
     drawPlayer(&player, renderer);
