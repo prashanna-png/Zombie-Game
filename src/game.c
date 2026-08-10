@@ -333,6 +333,40 @@ void runGame(void)
         case SDLK_d:
           player.movingRight = SDL_TRUE;
           break;
+
+        case SDLK_r:
+          if (gameOver)
+          {
+            player.health = 100;
+
+            kill = 0;
+
+            player.movingUp = SDL_FALSE;
+            player.movingDown = SDL_FALSE;
+            player.movingLeft = SDL_FALSE;
+            player.movingRight = SDL_FALSE;
+
+            player.rect.x = 100;
+            player.rect.y = 100;
+
+            for (int i = 0; i < MAX_ZOMBIES; i++)
+            {
+              zombie[i].alive = SDL_FALSE;
+              zombie[i].respawnTime = 0;
+            }
+
+            for (int i = 0; i < MAX_BULLETS; i++)
+            {
+              bullet[i].active = SDL_FALSE;
+            }
+
+            gameOver = SDL_FALSE;
+          }
+          break;
+
+        case SDLK_ESCAPE:
+          running = SDL_FALSE;
+          break;
         }
       }
       else if (event.type == SDL_KEYUP)
