@@ -88,6 +88,11 @@ void drawHealthBar(SDL_Renderer *renderer, Player *player)
 
 void drawKills(SDL_Renderer *renderer, TTF_Font *font, int kills)
 {
+  if (!font)
+  {
+    return;
+  }
+
   char text[50];
   snprintf(text, sizeof(text), "Kills: %d", kills);
 
@@ -129,6 +134,11 @@ void drawKills(SDL_Renderer *renderer, TTF_Font *font, int kills)
 
 void drawGameOver(SDL_Renderer *renderer, TTF_Font *font, int kill)
 {
+  if (!font)
+  {
+    return;
+  }
+
   SDL_Color black = {0, 0, 0, 255};
 
   SDL_Surface *surface = TTF_RenderText_Solid(
@@ -192,11 +202,11 @@ void drawGameOver(SDL_Renderer *renderer, TTF_Font *font, int kill)
 
   SDL_FRect killTextRect;
 
-  killTextRect.x = (1024 - killTextRect.w) / 2.0f;
-  killTextRect.y = 290;
-
   killTextRect.w = killSurface->w;
   killTextRect.h = killSurface->h;
+
+  killTextRect.x = (1024 - killTextRect.w) / 2.0f;
+  killTextRect.y = 290;
 
   SDL_RenderCopyF(renderer, killTexture, NULL, &killTextRect);
   SDL_DestroyTexture(killTexture);
@@ -352,7 +362,6 @@ void runGame(void)
             for (int i = 0; i < MAX_ZOMBIES; i++)
             {
               zombie[i].alive = SDL_FALSE;
-              zombie[i].respawnTime = 0;
             }
 
             for (int i = 0; i < MAX_BULLETS; i++)
@@ -432,6 +441,38 @@ void runGame(void)
       for (int i = 0; i < MAX_ZOMBIES; i++)
       {
         updateZombie(&zombie[i], player.rect);
+      }
+      for (int i = 0; i < MAX_ZOMBIES; i++)
+      {
+        if (!zombie[i].alive)
+          continue;
+
+        for (int j = i + 1; j < MAX_ZOMBIES; j++)
+        {
+          if (!zombie[j].alive)
+            continue;
+
+          if (SDL_HasIntersectionF(&zombie[i].rect, &zombie[j].rect))
+          {
+            if (zombie[i].rect.x < zombie[j].rect.x)
+            {
+              zombie[j].rect.x += 1;
+            }
+            else
+            {
+              zombie[j].rect.x -= 1;
+            }
+
+            if (zombie[i].rect.y < zombie[j].rect.y)
+            {
+              zombie[j].rect.y += 1;
+            }
+            else
+            {
+              zombie[j].rect.y -= 1;
+            }
+          }
+        }
       }
 
       for (int i = 0; i < MAX_BULLETS; i++)
