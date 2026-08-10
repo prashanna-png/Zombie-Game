@@ -129,12 +129,12 @@ void drawKills(SDL_Renderer *renderer, TTF_Font *font, int kills)
 
 void drawGameOver(SDL_Renderer *renderer, TTF_Font *font, int kill)
 {
-  SDL_Color white = {255, 255, 255, 255};
+  SDL_Color black = {0, 0, 0, 255};
 
   SDL_Surface *surface = TTF_RenderText_Solid(
       font,
       "Game Over",
-      white);
+      black);
 
   if (!surface)
   {
@@ -166,12 +166,12 @@ void drawGameOver(SDL_Renderer *renderer, TTF_Font *font, int kill)
   SDL_FreeSurface(surface);
 
   char killText[50];
-  snprintf(killText, sizeof(killText), "kills: %d", kill);
+  snprintf(killText, sizeof(killText), "Kills: %d", kill);
 
   SDL_Surface *killSurface = TTF_RenderText_Solid(
       font,
       killText,
-      white);
+      black);
 
   if (!killSurface)
   {
@@ -192,11 +192,11 @@ void drawGameOver(SDL_Renderer *renderer, TTF_Font *font, int kill)
 
   SDL_FRect killTextRect;
 
-  killTextRect.x = (1024 - textRect.w) / 2.0f;
+  killTextRect.x = (1024 - killTextRect.w) / 2.0f;
   killTextRect.y = 290;
 
-  killTextRect.w = surface->w;
-  killTextRect.h = surface->h;
+  killTextRect.w = killSurface->w;
+  killTextRect.h = killSurface->h;
 
   SDL_RenderCopyF(renderer, killTexture, NULL, &killTextRect);
   SDL_DestroyTexture(killTexture);
