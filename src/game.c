@@ -164,6 +164,43 @@ void drawGameOver(SDL_Renderer *renderer, TTF_Font *font, int kill)
 
   SDL_DestroyTexture(texture);
   SDL_FreeSurface(surface);
+
+  char killText[50];
+  snprintf(killText, sizeof(killText), "kills: %d", kill);
+
+  SDL_Surface *killSurface = TTF_RenderText_Solid(
+      font,
+      killText,
+      white);
+
+  if (!killSurface)
+  {
+    printf("failed to create kill text surface: %s \n", TTF_GetError());
+    return;
+  }
+
+  SDL_Texture *killTexture = SDL_CreateTextureFromSurface(
+      renderer,
+      killSurface);
+
+  if (!killTexture)
+  {
+    printf("failed to create text texture: %s\n", SDL_GetError());
+    SDL_FreeSurface(killSurface);
+    return;
+  }
+
+  SDL_FRect killTextRect;
+
+  killTextRect.x = (1024 - textRect.w) / 2.0f;
+  killTextRect.y = 290;
+
+  killTextRect.w = surface->w;
+  killTextRect.h = surface->h;
+
+  SDL_RenderCopyF(renderer, killTexture, NULL, &killTextRect);
+  SDL_DestroyTexture(killTexture);
+  SDL_FreeSurface(killSurface);
 }
 
 void runGame(void)
@@ -237,7 +274,7 @@ void runGame(void)
     printf("Background texture loaded successfully\n");
   }
 
-  TTF_Font *font = TTF_OpenFont("assets/fonts/Pixeled.ttf", 14);
+  TTF_Font *font = TTF_OpenFont("assets/fonts/Pixeled.ttf", 24);
 
   if (!font)
   {
