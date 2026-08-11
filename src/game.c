@@ -25,6 +25,56 @@ static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Texture *backgroundTexture = NULL;
 
+int getZombieSpeed(int kills)
+{
+  if (kills >= 70)
+    return 3;
+  else if (kills >= 50)
+    return 2;
+  else
+    return 1;
+}
+void drawAmmo(SDL_Renderer *renderer, TTF_Font *font, int ammo, int maxAmmo)
+{
+  char text[50];
+  snprintf(text, sizeof(text), "Ammo: %d / %d", ammo, maxAmmo);
+
+  SDL_Color white = {255, 255, 255, 255};
+
+  SDL_Surface *surface = TTF_RenderText_Solid(
+      font,
+      text,
+      white);
+
+  if (!surface)
+  {
+    printf("failed to create ammo text surface: %s\n", TTF_GetError());
+    return;
+  }
+
+  SDL_Texture *texture = SDL_CreateTextureFromSurface(
+      renderer,
+      surface);
+
+  if (!texture)
+  {
+    printf("failed to create ammo text texture: %s\n", SDL_GetError());
+    SDL_FreeSurface(surface);
+    return;
+  }
+
+  SDL_FRect textRect;
+
+  textRect.x = 20;
+  textRect.y = 80;
+  textRect.w = surface->w;
+  textRect.h = surface->h;
+
+  SDL_RenderCopyF(renderer, texture, NULL, &textRect);
+
+  SDL_DestroyTexture(texture);
+  SDL_FreeSurface(surface);
+}
 void spawnZombie(Zombie *zombie, SDL_Renderer *renderer)
 {
   int side = rand() % 4;
@@ -300,6 +350,9 @@ void runGame(void)
 
   int kill = 0;
 
+  int ammo = 70;
+  int maxAmmo = 70;
+
   Bullet bullet[MAX_BULLETS];
   for (int i = 0; i < MAX_BULLETS; i++)
   {
@@ -359,6 +412,9 @@ void runGame(void)
             player.rect.x = 100;
             player.rect.y = 100;
 
+            ammo = 0;
+            maxAmmo = 0;
+
             for (int i = 0; i < MAX_ZOMBIES; i++)
             {
               zombie[i].alive = SDL_FALSE;
@@ -400,9 +456,9 @@ void runGame(void)
         }
       }
 
-      if (event.type == SDL_MOUSEBUTTONDOWN)
+      if (event.button.button == SDL_BUTTON_LEFT)
       {
-        if (event.button.button == SDL_BUTTON_LEFT)
+        if (ammo > 0)
         {
           int mouseX, mouseY;
           SDL_GetMouseState(&mouseX, &mouseY);
@@ -412,9 +468,17 @@ void runGame(void)
             if (!bullet[i].active)
             {
               fireBullet(&bullet[i], &player, mouseX, mouseY);
+              ammo--;
               break;
             }
           }
+        }
+      }
+      if (event.button.button == SDL_BUTTON_RIGHT)
+      {
+        if (ammo < maxAmmo)
+        {
+          ammo = maxAmmo;
         }
       }
     }
@@ -432,6 +496,7 @@ void runGame(void)
           if (!zombie[i].alive && currentTime >= zombie[i].respawnTime)
           {
             spawnZombie(&zombie[i], renderer);
+            zombie[i].speed = getZombieSpeed(kill);
             lastSpawnTime = currentTime;
             break;
           }
@@ -560,6 +625,7 @@ void runGame(void)
 
     drawHealthBar(renderer, &player);
     drawKills(renderer, font, kill);
+    drawAmmo(renderer, font, ammo, maxAmmo);
 
     if (gameOver)
     {
