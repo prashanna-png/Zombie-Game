@@ -261,6 +261,43 @@ void drawGameOver(SDL_Renderer *renderer, TTF_Font *font, int kill)
   SDL_RenderCopyF(renderer, killTexture, NULL, &killTextRect);
   SDL_DestroyTexture(killTexture);
   SDL_FreeSurface(killSurface);
+
+  char restartText[50];
+  snprintf(restartText, sizeof(restartText), "Press R to restart or ESC to exit");
+
+  SDL_Surface *restartSurface = TTF_RenderText_Solid(
+      font,
+      restartText,
+      black);
+
+  if (!restartSurface)
+  {
+    printf("failed to create restart text surface: %s \n", TTF_GetError());
+    return;
+  }
+
+  SDL_Texture *restartTexture = SDL_CreateTextureFromSurface(
+      renderer,
+      restartSurface);
+
+  if (!restartTexture)
+  {
+    printf("failed to create text texture: %s\n", SDL_GetError());
+    SDL_FreeSurface(restartSurface);
+    return;
+  }
+
+  SDL_FRect restartTextRect;
+
+  restartTextRect.w = restartSurface->w;
+  restartTextRect.h = restartSurface->h;
+
+  restartTextRect.x = (1024 - restartTextRect.w) / 2.0f;
+  restartTextRect.y = 330;
+
+  SDL_RenderCopyF(renderer, restartTexture, NULL, &restartTextRect);
+  SDL_DestroyTexture(restartTexture);
+  SDL_FreeSurface(restartSurface);
 }
 
 void runGame(void)
@@ -382,19 +419,31 @@ void runGame(void)
         switch (event.key.keysym.sym)
         {
         case SDLK_w:
-          player.movingUp = SDL_TRUE;
+          if (!gameOver)
+          {
+            player.movingUp = SDL_TRUE;
+          }
           break;
 
         case SDLK_s:
-          player.movingDown = SDL_TRUE;
+          if (!gameOver)
+          {
+            player.movingDown = SDL_TRUE;
+          }
           break;
 
         case SDLK_a:
-          player.movingLeft = SDL_TRUE;
+          if (!gameOver)
+          {
+            player.movingLeft = SDL_TRUE;
+          }
           break;
 
         case SDLK_d:
-          player.movingRight = SDL_TRUE;
+          if (!gameOver)
+          {
+            player.movingRight = SDL_TRUE;
+          }
           break;
 
         case SDLK_r:
@@ -404,6 +453,8 @@ void runGame(void)
 
             kill = 0;
 
+            ammo = 70;
+
             player.movingUp = SDL_FALSE;
             player.movingDown = SDL_FALSE;
             player.movingLeft = SDL_FALSE;
@@ -412,18 +463,21 @@ void runGame(void)
             player.rect.x = 100;
             player.rect.y = 100;
 
-
             for (int i = 0; i < MAX_ZOMBIES; i++)
             {
+              initZombie(&zombie[i], renderer);
               zombie[i].alive = SDL_FALSE;
             }
 
             for (int i = 0; i < MAX_BULLETS; i++)
             {
+              initBullet(&bullet[i], renderer);
               bullet[i].active = SDL_FALSE;
             }
 
             gameOver = SDL_FALSE;
+
+            lastSpawnTime = SDL_GetTicks();
           }
           break;
 
@@ -454,7 +508,7 @@ void runGame(void)
         }
       }
 
-      if (event.button.button == SDL_BUTTON_LEFT)
+      if (event.button.button == SDL_BUTTON_LEFT && !gameOver)
       {
         if (ammo > 0)
         {
@@ -472,7 +526,7 @@ void runGame(void)
           }
         }
       }
-      if (event.button.button == SDL_BUTTON_RIGHT)
+      if (event.button.button == SDL_BUTTON_RIGHT && !gameOver)
       {
         if (ammo < maxAmmo)
         {
