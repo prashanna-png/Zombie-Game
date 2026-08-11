@@ -20,10 +20,30 @@
 #define MAX_BULLETS 100
 #define MAX_ZOMBIES 20
 #define ZOMBIE_SPAWN_INTERVAL 50
+#define TILE_SIZE 64
+#define MAP_COLS 16
+#define MAP_ROWS 12
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Texture *backgroundTexture = NULL;
+static SDL_Texture *floorTexture = NULL;
+static SDL_Texture *wallTexture = NULL;
+
+int map[MAP_ROWS][MAP_COLS] =
+    {
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+        {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
 int getZombieSpeed(int kills)
 {
@@ -300,6 +320,40 @@ void drawGameOver(SDL_Renderer *renderer, TTF_Font *font, int kill)
   SDL_FreeSurface(restartSurface);
 }
 
+void drawMap(SDL_Renderer *renderer)
+{
+  for (int row = 0; row < MAP_ROWS; row++)
+  {
+    for (int col = 0; col < MAP_COLS; col++)
+    {
+
+      SDL_FRect tileRect;
+
+      tileRect.x = col * TILE_SIZE;
+      tileRect.y = row * TILE_SIZE;
+      tileRect.w = TILE_SIZE;
+      tileRect.h = TILE_SIZE;
+
+      if (map[row][col] == 0)
+      {
+        SDL_RenderCopyF(
+            renderer,
+            floorTexture,
+            NULL,
+            &tileRect);
+      }
+      else if (map[row][col] == 1)
+      {
+        SDL_RenderCopyF(
+            renderer,
+            wallTexture,
+            NULL,
+            &tileRect);
+      }
+    }
+  }
+}
+
 void runGame(void)
 
 {
@@ -360,15 +414,26 @@ void runGame(void)
 
   printf("Renderer created successfully\n");
 
-  backgroundTexture = IMG_LoadTexture(renderer, "assets/map/backgroundtry.jpeg");
+  drawMap(renderer);
 
-  if (!backgroundTexture)
+  floorTexture = IMG_LoadTexture(renderer, "assets/map/floor.png");
+  if (!floorTexture)
   {
-    printf("Failed to load background texture: %s\n", IMG_GetError());
+    printf("Failed to load floor texture: %s\n", IMG_GetError());
   }
   else
   {
-    printf("Background texture loaded successfully\n");
+    printf("floor texture loaded successfully\n");
+  }
+
+  wallTexture = IMG_LoadTexture(renderer, "assets/map/floor.png");
+  if (!wallTexture)
+  {
+    printf("Failed to load wall texture: %s\n", IMG_GetError());
+  }
+  else
+  {
+    printf("wall texture loaded successfully\n");
   }
 
   TTF_Font *font = TTF_OpenFont("assets/fonts/Pixeled.ttf", 24);
@@ -657,10 +722,11 @@ void runGame(void)
 
     SDL_RenderClear(renderer);
 
-    if (backgroundTexture)
-    {
-      SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
-    }
+    // if (backgroundTexture)
+    // {
+    //   SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
+    // }
+    drawMap(renderer);
 
     for (int i = 0; i < MAX_ZOMBIES; i++)
     {
