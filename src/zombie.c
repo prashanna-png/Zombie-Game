@@ -3,6 +3,10 @@
 #include <SDL2/SDL.h>
 #include <math.h>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 void initZombie(Zombie *zombie, SDL_Renderer *renderer)
 {
   zombie->rect.x = 400;
@@ -22,13 +26,38 @@ void initZombie(Zombie *zombie, SDL_Renderer *renderer)
   }
 }
 
-void drawZombie(Zombie *zombie, SDL_Renderer *renderer)
+void drawZombie(Zombie *zombie, SDL_Renderer *renderer, SDL_FRect playerRect)
 {
   if (!zombie->alive)
   {
     return;
   }
-  SDL_RenderCopyF(renderer, zombie->texture, NULL, &zombie->rect);
+
+  float playerCenterX = playerRect.x + playerRect.w / 2;
+  float playerCenterY = playerRect.y + playerRect.h / 2;
+
+  float zombieCenterX = zombie->rect.x + zombie->rect.w / 2;
+  float zombieCenterY = zombie->rect.y + zombie->rect.h / 2;
+
+  float dx = playerCenterX - zombieCenterX;
+  float dy = playerCenterY - zombieCenterY;
+
+  float angleRadians = atan2(dy, dx);
+  float angleDegrees = angleRadians * (180.0f / M_PI);
+
+  SDL_FPoint center = {
+    zombie->rect.w / 2,
+  zombie->rect.h / 2
+  };
+
+SDL_RenderCopyExF(
+    renderer,
+    zombie->texture,
+    NULL,
+    &zombie->rect,
+    angleDegrees,
+    &center,
+    SDL_FLIP_VERTICAL);
 }
 
 void updateZombie(Zombie *zombie, SDL_FRect playerRect)

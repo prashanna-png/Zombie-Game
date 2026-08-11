@@ -21,7 +21,7 @@ typedef struct
 } Zombie;
 
 void initZombie(Zombie *zombie, SDL_Renderer *renderer);
-void drawZombie(Zombie *zombie, SDL_Renderer *renderer);
+void drawZombie(Zombie *zombie, SDL_Renderer *renderer, SDL_FRect playerRect);
 void updateZombie(Zombie *zombie, SDL_FRect playerRect);
 void drawZombieHealthBar(Zombie *zombie, SDL_Renderer *renderer);
 

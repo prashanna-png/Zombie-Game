@@ -412,8 +412,6 @@ void runGame(void)
             player.rect.x = 100;
             player.rect.y = 100;
 
-            ammo = 0;
-            maxAmmo = 0;
 
             for (int i = 0; i < MAX_ZOMBIES; i++)
             {
@@ -612,7 +610,7 @@ void runGame(void)
 
     for (int i = 0; i < MAX_ZOMBIES; i++)
     {
-      drawZombie(&zombie[i], renderer);
+      drawZombie(&zombie[i], renderer, player.rect);
       drawZombieHealthBar(&zombie[i], renderer);
     }
 
