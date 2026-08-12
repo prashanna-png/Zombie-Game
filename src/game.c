@@ -23,26 +23,36 @@
 #define TILE_SIZE 64
 #define MAP_COLS 16
 #define MAP_ROWS 12
+#define MAX_OBSTACLES 30
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Texture *backgroundTexture = NULL;
 static SDL_Texture *floorTexture = NULL;
-static SDL_Texture *wallTexture = NULL;
+
+typedef struct
+{
+  SDL_Texture *texture;
+  SDL_FRect rect;
+  SDL_bool solid;
+} Obstacle;
+
+static Obstacle obstacles[MAX_OBSTACLES];
+static int obstacleCount = 0;
 
 int map[MAP_ROWS][MAP_COLS] =
     {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
-        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-        {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
 int getZombieSpeed(int kills)
@@ -336,26 +346,36 @@ void drawMap(SDL_Renderer *renderer)
 
       if (map[row][col] == 0)
       {
-        SDL_RenderCopyF(
-            renderer,
-            floorTexture,
-            NULL,
-            &tileRect);
-      }
-      else if (map[row][col] == 1)
-      {
-        SDL_RenderCopyF(
-            renderer,
-            wallTexture,
-            NULL,
-            &tileRect);
+        if (floorTexture)
+        {
+          SDL_RenderCopyF(
+              renderer,
+              floorTexture,
+              NULL,
+              &tileRect);
+        }
       }
     }
   }
 }
 
-void runGame(void)
+void drawObstacles(SDL_Renderer *renderer)
+{
+  for (int i = 0; i < obstacleCount; i++)
+  {
+    SDL_RenderCopyF(
+        renderer,
+        obstacles[i].texture,
+        NULL,
+        &obstacles[i].rect);
 
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderDrawRectF(renderer, &obstacles[i].rect);
+  }
+}
+
+
+void runGame(void)
 {
   srand(time(NULL));
 
@@ -414,8 +434,6 @@ void runGame(void)
 
   printf("Renderer created successfully\n");
 
-  drawMap(renderer);
-
   floorTexture = IMG_LoadTexture(renderer, "assets/map/floor.png");
   if (!floorTexture)
   {
@@ -426,16 +444,6 @@ void runGame(void)
     printf("floor texture loaded successfully\n");
   }
 
-  wallTexture = IMG_LoadTexture(renderer, "assets/map/floor.png");
-  if (!wallTexture)
-  {
-    printf("Failed to load wall texture: %s\n", IMG_GetError());
-  }
-  else
-  {
-    printf("wall texture loaded successfully\n");
-  }
-
   TTF_Font *font = TTF_OpenFont("assets/fonts/Pixeled.ttf", 24);
 
   if (!font)
@@ -443,9 +451,63 @@ void runGame(void)
     printf("failed to load font: %s\n", TTF_GetError());
   }
 
+  SDL_Texture *crateTexture =
+      IMG_LoadTexture(renderer, "assets/map/rock.png");
+
   SDL_bool running = SDL_TRUE;
   SDL_bool gameOver = SDL_FALSE;
   SDL_Event event;
+
+  obstacleCount = 0;
+
+  obstacles[obstacleCount].texture = crateTexture;
+
+  obstacles[obstacleCount].rect.x = 300;
+  obstacles[obstacleCount].rect.y = 250;
+  obstacles[obstacleCount].rect.w = 64;
+  obstacles[obstacleCount].rect.h = 64;
+  obstacles[obstacleCount].solid = SDL_TRUE;
+  obstacleCount++;
+
+  obstacles[obstacleCount].texture = crateTexture;
+  obstacles[obstacleCount].rect.x = 500;
+  obstacles[obstacleCount].rect.y = 400;
+  obstacles[obstacleCount].rect.w = 64;
+  obstacles[obstacleCount].rect.h = 64;
+  obstacles[obstacleCount].solid = SDL_TRUE;
+  obstacleCount++;
+
+  obstacles[obstacleCount].texture = crateTexture;
+  obstacles[obstacleCount].rect.x = 800;
+  obstacles[obstacleCount].rect.y = 300;
+  obstacles[obstacleCount].rect.w = 64;
+  obstacles[obstacleCount].rect.h = 64;
+  obstacles[obstacleCount].solid = SDL_TRUE;
+  obstacleCount++;
+
+  obstacles[obstacleCount].texture = crateTexture;
+  obstacles[obstacleCount].rect.x = 700;
+  obstacles[obstacleCount].rect.y = 700;
+  obstacles[obstacleCount].rect.w = 64;
+  obstacles[obstacleCount].rect.h = 64;
+  obstacles[obstacleCount].solid = SDL_TRUE;
+  obstacleCount++;
+
+  obstacles[obstacleCount].texture = crateTexture;
+  obstacles[obstacleCount].rect.x = 50;
+  obstacles[obstacleCount].rect.y = 150;
+  obstacles[obstacleCount].rect.w = 64;
+  obstacles[obstacleCount].rect.h = 64;
+  obstacles[obstacleCount].solid = SDL_TRUE;
+  obstacleCount++;
+
+  obstacles[obstacleCount].texture = crateTexture;
+  obstacles[obstacleCount].rect.x = 100;
+  obstacles[obstacleCount].rect.y = 600;
+  obstacles[obstacleCount].rect.w = 64;
+  obstacles[obstacleCount].rect.h = 64;
+  obstacles[obstacleCount].solid = SDL_TRUE;
+  obstacleCount++;
 
   Player player;
   initPlayer(&player, renderer);
@@ -604,6 +666,7 @@ void runGame(void)
     {
       updatePlayer(&player);
 
+
       Uint32 currentTime = SDL_GetTicks();
 
       if (currentTime - lastSpawnTime >= ZOMBIE_SPAWN_INTERVAL)
@@ -722,11 +785,8 @@ void runGame(void)
 
     SDL_RenderClear(renderer);
 
-    // if (backgroundTexture)
-    // {
-    //   SDL_RenderCopy(renderer, backgroundTexture, NULL, NULL);
-    // }
     drawMap(renderer);
+    drawObstacles(renderer);
 
     for (int i = 0; i < MAX_ZOMBIES; i++)
     {
@@ -758,6 +818,11 @@ void runGame(void)
   if (backgroundTexture)
   {
     SDL_DestroyTexture(backgroundTexture);
+  }
+
+  if (floorTexture)
+  {
+    SDL_DestroyTexture(floorTexture);
   }
 
   SDL_DestroyRenderer(renderer);
